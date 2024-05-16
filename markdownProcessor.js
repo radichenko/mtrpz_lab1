@@ -36,7 +36,45 @@ const checkMarkers = (data) => {
 };
 
 const checkNesting = (data) => {
+    const markers = ['**', '`', '_'];
+    let pre = false;
+    let stack = [];
 
-}
+    for (let i = 0; i < data.length; i++) {
+        if (data.startsWith('```', i)) {
+            pre = !pre;
+            i += 2;
+            continue;
+        }
+
+        if (pre) continue;
+
+        for (const marker of markers) {
+            if (data.startsWith(marker, i)) {
+                if (marker === '_') {
+                    if ((i > 0 && data[i - 1].match(/\w/)) && (i < data.length - 1 && data[i + 1].match(/\w/))) {
+                        continue;
+                    }
+                    if ((i > 0 && data[i - 1].match(/[^\w\s]/)) && (i < data.length - 1 && data[i + 1].match(/[^\w\s]/))) {
+                        continue;
+                    }
+                }
+
+                if (stack.length > 0 && stack[stack.length - 1] !== marker) {
+                    return false;
+                }
+                if (stack.length > 0 && stack[stack.length - 1] === marker) {
+                    stack.pop();
+                } else {
+                    stack.push(marker);
+                }
+                i += marker.length - 1;
+                break;
+            }
+        }
+    }
+
+    return true;
+};
 
 module.exports = { checkMarkers, checkNesting };
