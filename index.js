@@ -13,6 +13,8 @@ if (!source) {
 
 readSource(source, destination, processContent);
 
+const html = convertToHtml(data);
+
 function processContent(data, output) {
 
 }
