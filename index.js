@@ -14,5 +14,21 @@ if (!source) {
 readSource(source, destination, processContent);
 
 function processContent(data, output) {
+    if (!checkMarkers(data)) {
+        console.error('Error: Unmatched markers found');
+        process.exit(1);
+    }
 
+    if (!checkNesting(data)) {
+        console.error('Error: Nesting issue detected');
+        process.exit(1);
+    }
+
+    const html = convertToHtml(data);
+
+    if (output) {
+        writeDestination(output, html);
+    } else {
+        console.log(html);
+    }
 }
