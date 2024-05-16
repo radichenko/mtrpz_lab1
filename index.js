@@ -1,4 +1,5 @@
 const readSource = require('./fileReader');
+const writeDestination = require('./fileWriter');
 const { checkMarkers, checkNesting } = require('./markdownProcessor');
 const convertToHtml = require('./htmlConverter');
 
