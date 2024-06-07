@@ -1,7 +1,7 @@
-const readSource = require('./fileReader');
-const writeDestination = require('./fileWriter');
-const processor = require('./markdownProcessor');
-const convertToHtml = require('./htmlConverter');
+import readSource from './fileReader.js';
+import writeDestination from './fileWriter.js';
+import processor from './markdownProcessor.js';
+import convertToHtml from './htmlConverter.js';
 
 const args = process.argv.slice(2);
 let source = null;

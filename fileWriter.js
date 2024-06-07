@@ -1,7 +1,7 @@
-const fs = require('fs');
+import { writeFile } from 'fs';
 
 const writeDestination = (output, content) => {
-    fs.writeFile(output, content, (err) => {
+    writeFile(output, content, (err) => {
         if (err) {
             console.error(`Error writing to: ${output}`, err);
             process.exit(1);
@@ -10,4 +10,4 @@ const writeDestination = (output, content) => {
     });
 };
 
-module.exports = writeDestination;
+export default writeDestination;

@@ -1,7 +1,7 @@
-const fs = require('fs');
+import { readFile } from 'fs';
 
 const readSource = (input, destination, processContent) => {
-    fs.readFile(input, 'utf8', (err, data) => {
+    readFile(input, 'utf8', (err, data) => {
         if (err) {
             console.error(`Error reading from: ${input}`, err);
             process.exit(1);
@@ -11,4 +11,4 @@ const readSource = (input, destination, processContent) => {
     });
 };
 
-module.exports = readSource;
+export default readSource;

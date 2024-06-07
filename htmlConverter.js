@@ -37,5 +37,4 @@ const htmlConverter = (data, format) => {
     });
     return isHtml ? '<p>' + html + '</p>' : html;
 };
-
-module.exports = htmlConverter;
+export default htmlConverter;
