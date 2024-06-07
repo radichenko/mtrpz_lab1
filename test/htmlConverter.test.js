@@ -4,7 +4,7 @@ import htmlConverter from '../htmlConverter.js';
 describe('markdownProcessor', () => {
     it('should paragraphise', () => {
         const data = 'This is first row\n\nThis is second row\nAlso second';
-        expect(htmlConverter(data, 'html')).to.equal('<p>This is first row\n</p>\n<p>This is second row\nAlso second\n</p>');
+        expect(htmlConverter(data, 'htmlvd ')).to.equal('<p>This is first row\n</p>\n<p>This is second row\nAlso second\n</p>'); // broken
     });
 
     it('should process simple tags', () => {
