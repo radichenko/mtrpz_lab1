@@ -1,80 +1,72 @@
+const { start } = require('repl');
 const { htmlConverter } = require('./htmlConverter');
 
-const checkMarkers = (data) => {
+const tags = {
+    bold: [
+        /(?:\s|^)\*\*(?:\S)/,
+        /(?:\S)\*\*(?:\s|$)/,
+    ],
+    italic: [
+        /(?:\s|^)_(?:\S)/,
+        /(?:\S)_(?:\s|$)/
+    ],
+    monospace: [
+        /(?:\s|^)`(?:\S)`/,
+        /(?:\S)`(?:\s|$)/,
+    ],
+}
+module.exports = (data) => {
     let bold = false;
     let monospace = false;
     let italic = false;
     let preformatted = 0;
+    const lines = data.split(/\n|\r\n/);
+    const tags = [];
 
-    for (let i = 0; i < data.length; i++) {
-        if (data[i] === '*' && i + 1 < data.length && data[i + 1] === '*') {
-            if (!(i > 0 && data[i - 1] === '\\')) {
-                bold = !bold;
-                i++;
-            }
-        } else if (data[i] === '`' && (i < 1 || data[i - 1] !== '`')) {
-            if (!(i > 0 && data[i - 1] === '\\')) {
-                monospace = !monospace;
-            }
-        } else if (data[i] === '_') {
-            if (!(i > 0 && data[i - 1] === '\\')) {
-                const hasSpace = (i > 0 && data[i - 1] === ' ') || (i < data.length - 1 && data[i + 1] === ' ');
-                const hasQuote = (i > 0 && data[i - 1] === '‘') || (i < data.length - 1 && data[i + 1] === '’');
-                const partOfWord = (i > 0 && data[i - 1].match(/\w/)) && (i < data.length - 1 && data[i + 1].match(/\w/));
 
-                if (!hasSpace && !hasQuote && !partOfWord) {
-                    italic = !italic;
-                }
-            }
-        } else if (data[i] === '`' && i + 2 < data.length && data[i + 1] === '`' && data[i + 2] === '`') {
+    for (const line of lines) {
+        if (line.trim() === '```') {
             preformatted++;
-            i += 2;
-        }
-    }
-
-    return !(bold || monospace || italic || preformatted % 2 !== 0);
-};
-
-const checkNesting = (data) => {
-    const markers = ['**', '`', '_'];
-    let pre = false;
-    let stack = [];
-
-    for (let i = 0; i < data.length; i++) {
-        if (data.startsWith('```', i)) {
-            pre = !pre;
-            i += 2;
             continue;
         }
-
-        if (pre) continue;
-
-        for (const marker of markers) {
-            if (data.startsWith(marker, i)) {
-                if (marker === '_') {
-                    if ((i > 0 && data[i - 1].match(/\w/)) && (i < data.length - 1 && data[i + 1].match(/\w/))) {
-                        continue;
-                    }
-                    if ((i > 0 && data[i - 1].match(/[^\w\s]/)) && (i < data.length - 1 && data[i + 1].match(/[^\w\s]/))) {
-                        continue;
-                    }
+        for (const tagName in tags) {
+            const tag = tags[tagName];
+            for (let i = 0; i < 2; i++) {
+                while (true) {
+                    const match = line.exec(tag[i]);
+                    if (match.index === -1) break
+    
+                    tags.push({
+                        start: match.index,
+                        closing: i === 0,
+                        type: tagName
+                    })
                 }
-
-                if (stack.length > 0 && stack[stack.length - 1] !== marker) {
-                    return false;
-                }
-                if (stack.length > 0 && stack[stack.length - 1] === marker) {
-                    stack.pop();
-                } else {
-                    stack.push(marker);
-                }
-                i += marker.length - 1;
-                break;
             }
         }
     }
 
-    return true;
-};
+    if (preformatted % 2 !== 0) {
+        throw new Error('Unmatched preformatted code block');
+    }
+    tags.sort((a, b) => a.start - b.start);
+    let expected = '';
 
-module.exports = { checkMarkers, checkNesting };
+    for (const tag of tags) {
+        if (expected === '') {
+            if (tag.closing) {
+                throw new Error('Unmatched closing tag');
+            }
+
+            expected = tag.type;
+        } else {
+            if (!tag.closing) {
+                throw new Error('Unmatched opening tag');
+            }
+            if (expected !== tag.type) {
+                throw new Error('Mismatched tags');
+            }
+            expected = '';
+        }
+    }
+};

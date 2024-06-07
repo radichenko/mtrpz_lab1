@@ -1,36 +1,36 @@
 const htmlConverter = (data) => {
-    let html = '';
-    const lines = data.split('\n');
+    let html = '<p>';
+    const lines = data.split(/\n|\r\n/);
     let inPre = false;
-    let newParagraph = true;
+    //let newParagraph = true;
+    let newLineCount = 0;
 
     lines.forEach((line, index) => {
         if (line.startsWith('```')) {
             inPre = !inPre;
             html += inPre ? '<pre>' : '</pre>\n';
-            newParagraph = true;
+            //newParagraph = true;
         } else if (inPre) {
             html += `${line}\n`;
         } else {
             if (line.trim() !== '') {
-                if (newParagraph && html !== '') {
-                    html += '<p>';
+                //newParagraph = false;
+                if (newLineCount !== 0) {
+                    html += '</p>\n<p>';
+                    newLineCount = 0;
                 }
-                newParagraph = false;
 
-                line = line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                    .replace(/_(.*?)_/g, '<i>$1</i>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>');
+                line = line.replace(/(?:\s|^)\*\*(\S.*?\S|\S)\*\*(?:\s|$)/g, '<b>$1</b>')
+                    .replace(/(?:\s|^)_(\S.*?\S|\S)_(?:\s|$)/g, '<i>$1</i>')
+                    .replace(/(?:\s|^)`(\S.*?\S|\S)`(?:\s|$)/g, '<code>$1</code>');
 
-                html += line;
-                if ((lines[index + 1] && lines[index + 1].trim() === '') || index === lines.length - 1) {
-                    html += '</p>\n';
-                    newParagraph = true;
-                }
+                html += line + '\n';
+            } else {
+                newLineCount++;
             }
         }
     });
-    return html;
+    return html + '</p>';
 };
 
 module.exports = htmlConverter;
